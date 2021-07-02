@@ -33,17 +33,24 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          #command: {{ .Values.image.command }} # Issue here, I can't manage to get the values.yaml command value to not get mangled (loosing quotes)
+          command: ["./TechChallengeApp","serve"]
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 3000
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "tech-challenge-app.fullname" . }}-configmap
+            - secretRef:
+                name: {{ include "tech-challenge-app.fullname" . }}-secrets
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthcheck/
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /healthcheck/
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

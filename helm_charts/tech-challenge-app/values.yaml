@@ -5,10 +5,11 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: servian/techchallengeapp
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: latest
+  command: ["./TechChallengeApp","serve"]
 
 imagePullSecrets: []
 nameOverride: ""
@@ -37,7 +38,7 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: LoadBalancer
   port: 80
 
 ingress:
@@ -80,3 +81,15 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+postgresql:
+  # most recent Postgresql version tested against
+  appVersion: 10.7
+
+  # hardcoded database details for challenge purpose
+  postgresqlUsername: user
+  postgresqlDatabase: db
+
+  # hardcoded clear password for challenge simplification purpose
+  # TODO: dynamically inject from a secrets management service
+  postgresqlPassword: passwd

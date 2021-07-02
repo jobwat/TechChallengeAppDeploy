@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tech-challenge-app.fullname" . }}-configmap
+  labels:
+    {{- include "tech-challenge-app.labels" . | nindent 4 }}
+data:
+  VTT_DBHOST: {{ include "tech-challenge-app.fullname" . }}-postgresql
+  #VTT_DBPORT: "5432" # default
+  VTT_DBUSER: {{ .Values.postgresql.postgresqlUsername | quote }}
+  VTT_DBNAME: {{ .Values.postgresql.postgresqlDatabase | quote }}
+  VTT_LISTENHOST: "0.0.0.0"
+  #VTT_LISTENPORT: 3000 # default
