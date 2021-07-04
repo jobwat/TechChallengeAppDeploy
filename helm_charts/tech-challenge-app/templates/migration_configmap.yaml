@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "tech-challenge-app.fullname" . }}-db-migrations-{{ .Chart.AppVersion }}-configmap"
+  labels:
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+data:
+  VTT_DBHOST: {{ include "tech-challenge-app.fullname" . }}-postgresql
+  #VTT_DBPORT: "5432" # default
+  VTT_DBUSER: {{ .Values.postgresql.postgresqlUsername | quote }}
+  VTT_DBNAME: {{ .Values.postgresql.postgresqlDatabase | quote }}

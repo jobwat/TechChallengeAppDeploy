@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "tech-challenge-app.fullname" . }}-{{ .Chart.AppVersion }}-db-migrations"
+  labels:
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ include "tech-challenge-app.fullname" . }}-{{ .Chart.AppVersion }}-db-migrations"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: {{ .Chart.Name }}-db-migrations
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: ["./TechChallengeApp","updatedb","-s"]
+        envFrom:
+          - configMapRef:
+              name: "{{ include "tech-challenge-app.fullname" . }}-db-migrations-{{ .Chart.AppVersion }}-configmap"
+          - secretRef:
+              name: "{{ include "tech-challenge-app.fullname" . }}-db-migrations-{{ .Chart.AppVersion }}-secrets"
+      initContainers:
+      - name: init-wait-for-dependencies
+        image: docker.io/jobwat/wait_for:latest
+        imagePullPolicy: Always
+        command: ["/docker-entrypoint.sh"]
+        args: ["wait_for", "postgresql:DBHOST"]
+        env:
+        - name: DBHOST
+          value: {{ include "tech-challenge-app.fullname" . }}-postgresql
