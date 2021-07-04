@@ -34,7 +34,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           #command: {{ .Values.image.command }} # Issue here, I can't manage to get the values.yaml command value to not get mangled (loosing quotes)
-          command: ["./TechChallengeApp","serve"]
+          #command: ["./TechChallengeApp","updatedb","-s", "&&", "./TechChallengeApp","serve"]
+          command: ["/bin/sh","-c"]
+          args: ["./TechChallengeApp updatedb -s && ./TechChallengeApp serve"]
           ports:
             - name: http
               containerPort: 3000
