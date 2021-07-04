@@ -8,7 +8,7 @@ This is a deployment proposition to Servian's [TechChallengeApp](https://github.
   Current file
 
 - [doc/adr](doc/adr) folder
-  Architecture Design Records (ADR), details on why can be found in the [first entry](adr/0001-record-architecture-decisions.md)
+  Architecture Design Records (ADR), details on why can be found in the [first entry](doc/adr/0001-record-architecture-decisions.md)
 
   Naming convention: `####-<decision title>` where the first 4 digits are iterated by 1 for each record.
 
@@ -59,6 +59,8 @@ Or create a temporary namespace (recommended if multiple projects on the cluster
 helm install tech-challenge-app --namespace <your_namespace> --create-namespace ./helm_charts//tech-challenge-app
 ```
 
+The app may take up to 3-4 minutes to start due to the postgres initialisation time.
+
 
 ### Access the app
 
@@ -87,22 +89,38 @@ To remove the persisted volume, run the following
 kubectl --namespace <your_namespace> delete persistentvolumeclaims --all
 ```
 
-## TODO
+## Challenge
 
-- ~~Get postgresql instance with persistance as dependency~~
+### Run sheet
+
+- ~~Get postgresql instance with persistance as an Helm chart dependency~~
 - ~~Get the app working on Okteto~~
-- Hook a job to ensure DB migration/creation/seed run at install/upgrade - [doc](https://itnext.io/database-migrations-on-kubernetes-using-helm-hooks-fb80c0d97805#9128)
-- Get the main app to wait for postgres dependency to be available - [doc](https://medium.com/geekculture/helm-chart-wait-for-all-dependencies-before-starting-kubernetes-pods-cc0a3ddbf02b)
+- COMPROMISED - ~~Hook a job to ensure DB creation/seed run only once at install - [doc](https://itnext.io/database-migrations-on-kubernetes-using-helm-hooks-fb80c0d97805#9128)~~
+- ~~Get the DB setup to run at container start~~
+- ~~Get the main app to wait for postgres dependency to be available - [doc](https://medium.com/geekculture/helm-chart-wait-for-all-dependencies-before-starting-kubernetes-pods-cc0a3ddbf02b)~~
+- Get the DB setup to run only at first run
 
 
-## Chatter
+### Known issues
 
-### Happy discoveries during this challenge
+#### Each deployment resets the data
 
-- ADR (Architecture Design Records) concept and implementation
-- Github release helper [ghr](github.com/tcnksm/ghr) to push release with artifacts
+In current implementation the DB setup `updatedb` command is run at each container start.
+This is a workaround to the hook/job solution to ensure the DB was setup before the app starts.
+The planned hook/job solution doesn't work with a database set as Helm subchart dependency (the dependency gets blocked by the hook (see attempt [here](https://github.com/jobwat/TechChallengeAppDeploy/commit/6c0c8564149755f207dd57ea6675c87dcbeb711a))).
 
-### Points I'd make clearer
+#### Password are hardcoded in cleartext in the repository
 
-- [.circleci/config.yml#L147](https://github.com/servian/TechChallengeApp/blob/cd0c072cb11f534dfe1b673b5ec439b91e2d4da9/.circleci/config.yml#L147)
+This a deliberate choice to simplify this challenge exercise
+
+
+### Discoveries during this challenge
+
+- Helm with its limitations (with initContainers, hooks and dependencies).
+- ADR (Architecture Design Records) concept and implementation.
+- Github release helper [ghr](github.com/tcnksm/ghr) to push release with artifacts.
+
+### Implementation nitpick
+
+- [TechChallengeApp/.circleci/config.yml#L147](https://github.com/servian/TechChallengeApp/blob/cd0c072cb11f534dfe1b673b5ec439b91e2d4da9/.circleci/config.yml#L147)
   If current version has already been published, it's currently silenced. I'd output a little message to clarify debugging.

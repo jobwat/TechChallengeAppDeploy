@@ -33,8 +33,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          #command: {{ .Values.image.command }} # Issue here, I can't manage to get the values.yaml command value to not get mangled (loosing quotes)
-          #command: ["./TechChallengeApp","updatedb","-s", "&&", "./TechChallengeApp","serve"]
+          #command: {{ .Values.image.command }} # Issue here, I can't manage to get the values.yaml command value to not get mangled (array string are loosing quotes)
           command: ["/bin/sh","-c"]
           args: ["./TechChallengeApp updatedb -s && ./TechChallengeApp serve"]
           ports:
