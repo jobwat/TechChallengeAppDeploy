@@ -56,6 +56,15 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      initContainers:
+        - name: init-wait-for-dependencies
+          image: docker.io/jobwat/wait_for:latest
+          imagePullPolicy: Always
+          command: ["/docker-entrypoint.sh"]
+          args: ["wait_for", "postgresql:DBHOST"]
+          env:
+          - name: DBHOST
+            value: {{ include "tech-challenge-app.fullname" . }}-postgresql
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
